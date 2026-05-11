@@ -1,94 +1,182 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-  <title>Asupanindo</title>
+<title>Asupanmu</title>
 
-  <link rel="stylesheet" href="style.css">
+<style>
+
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:sans-serif;
+}
+
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:999;
+  background:#000;
+  padding:15px;
+}
+
+.logo{
+  color:#8b5cf6;
+  font-size:40px;
+  font-weight:bold;
+}
+
+#search{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:15px;
+  background:#111;
+  color:white;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:
+  repeat(2,1fr);
+
+  gap:14px;
+  padding:14px;
+}
+
+.card{
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  text-decoration:none;
+  color:white;
+}
+
+.card img{
+  width:100%;
+  height:300px;
+  object-fit:cover;
+}
+
+.title{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+
+  padding:10px;
+
+  background:
+  linear-gradient(
+    transparent,
+    rgba(0,0,0,.9)
+  );
+}
+
+</style>
+
 </head>
 <body>
 
-<header class="navbar">
-  <h1 class="logo">Asupanindo</h1>
+<div class="navbar">
 
-  <input
-    type="text"
-    id="search"
-    placeholder="Search video..."
-  >
-</header>
+<div class="logo">
+Asupanmu
+</div>
 
-<main>
-  <div id="videos" class="grid"></div>
-</main>
+<input
+type="text"
+id="search"
+placeholder="Search video..."
+>
+
+</div>
+
+<div
+id="videos"
+class="grid">
+</div>
 
 <script>
+
 let allVideos = [];
 
 async function loadVideos() {
-  try {
-    const res = await fetch("/api/videos");
-    const json = await res.json();
 
-    const videos = json.data || [];
+  try {
+
+    const res =
+      await fetch("/api/videos");
+
+    const videos =
+      await res.json();
 
     allVideos = videos;
 
     renderVideos(videos);
 
-  } catch (err) {
-    console.error(err);
+  } catch(err) {
+
+    console.log(err);
+
   }
 }
 
 function renderVideos(videos) {
-  const container = document.getElementById("videos");
+
+  const container =
+    document.getElementById("videos");
 
   container.innerHTML = "";
 
   videos.forEach(video => {
 
-    const card = document.createElement("a");
+    const card =
+      document.createElement("a");
 
-    // arahkan ke halaman asli VIZEY
     card.href =
-      video.url ||
-      video.embed_url ||
-      "#";
+      video.watch;
 
     card.target = "_blank";
 
     card.className = "card";
 
     card.innerHTML = `
-      <img src="${video.thumbnail}" alt="">
+      <img src="${video.thumbnail}">
       <div class="title">
         ${video.title}
       </div>
     `;
 
     container.appendChild(card);
+
   });
 }
 
-// search realtime
-document.getElementById("search")
+document
+.getElementById("search")
 .addEventListener("input", e => {
 
-  const keyword =
+  const key =
     e.target.value.toLowerCase();
 
-  const filtered = allVideos.filter(v =>
-    v.title.toLowerCase()
-    .includes(keyword)
-  );
+  const filtered =
+    allVideos.filter(v =>
+      v.title.toLowerCase()
+      .includes(key)
+    );
 
   renderVideos(filtered);
+
 });
 
 loadVideos();
+
 </script>
 
 </body>
