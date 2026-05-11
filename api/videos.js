@@ -2,25 +2,30 @@ export default async function handler(req, res) {
 
   try {
 
-    const url =
-      `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=1`;
+    let allVideos = [];
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0",
-        "Accept":
-          "application/json"
+    // ambil 7 halaman
+    for(let page = 1; page <= 7; page++) {
+
+      const response = await fetch(
+        `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}`
+      );
+
+      const json = await response.json();
+
+      if(json.data) {
+        allVideos.push(...json.data);
       }
-    });
+    }
 
-    const text =
-      await response.text();
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=3600, stale-while-revalidate"
+    );
 
-    res.status(200).send(text);
+    res.status(200).json(allVideos);
 
-  } catch (err) {
+  } catch(err) {
 
     res.status(500).json({
       error: err.message
