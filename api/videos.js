@@ -1,27 +1,55 @@
-import axios from "axios";
-
 export default async function handler(req, res) {
 
   try {
 
-    // ambil query page manual
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(
+      req.url,
+      `http://${req.headers.host}`
+    );
 
     const page =
       url.searchParams.get("page") || 1;
 
-    console.log("PAGE:", page);
+    // random anti cache
+    const unique =
+      Date.now() + "_" +
+      Math.floor(Math.random() * 999999);
 
-    const response = await axios.get(
-      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
+    const apiUrl =
+      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&nocache=${unique}`;
+
+    console.log(apiUrl);
+
+    const response = await fetch(apiUrl, {
+
+      method: "GET",
+
+      headers: {
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+      }
+
+    });
+
+    const data = await response.json();
+
+    // disable cache vercel
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
     );
 
     res.setHeader(
-      "Cache-Control",
-      "s-maxage=300, stale-while-revalidate"
+      "Pragma",
+      "no-cache"
     );
 
-    res.status(200).json(response.data);
+    res.setHeader(
+      "Expires",
+      "0"
+    );
+
+    res.status(200).json(data);
 
   } catch (err) {
 
