@@ -4,53 +4,43 @@ export default async function handler(req, res) {
 
     let allVideos = [];
 
-    // jumlah page yang mau diambil
-    const totalPages = 5;
+    const totalPages = 10;
 
     for (let page = 1; page <= totalPages; page++) {
 
       const response = await fetch(
-        `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}`
+        `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}&limit=100`
       );
 
       const json = await response.json();
 
-      const videos =
-        json.data ||
-        [];
+      const videos = json.data || [];
 
       allVideos.push(...videos);
 
     }
 
     // hapus duplikat
-    const uniqueVideos =
-      Array.from(
-        new Map(
-          allVideos.map(v => [v.id, v])
-        ).values()
-      );
+    const uniqueVideos = Array.from(
+      new Map(
+        allVideos.map(v => [v.id, v])
+      ).values()
+    );
 
-    // format data
-    const result =
-      uniqueVideos.map(video => ({
+    const result = uniqueVideos.map(video => ({
 
-        id: video.id,
+      id: video.id,
 
-        title:
-          video.title ||
-          "No Title",
+      title: video.title || "No Title",
 
-        thumbnail:
-          video.thumbnail ||
-          "",
+      thumbnail: video.thumbnail || "",
 
-        watch:
-          `https://vizey.net/api/v1/videos?apikey=${process.env.API_KEY}&id=${video.id}`
+      watch:
+      `https://vizey.net/api/v1/videos?apikey=${process.env.API_KEY}&id=${video.id}`
 
-      }));
+    }));
 
-    // cache ringan
+    // cache
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
