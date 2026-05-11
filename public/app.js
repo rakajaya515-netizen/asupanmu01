@@ -9,10 +9,34 @@ document.getElementById("loading");
 
 let loading = false;
 
+// semua video unik
 let allVideos = [];
 
-// simpan ID agar tidak duplikat
+// simpan ID video
 const loadedIds = new Set();
+
+// simpan cache browser
+const STORAGE_KEY = "ASUPANMU_VIDEOS";
+
+// load cache awal
+const cached =
+JSON.parse(
+  localStorage.getItem(STORAGE_KEY)
+) || [];
+
+cached.forEach(v => {
+
+  loadedIds.add(v.id);
+
+});
+
+allVideos = cached;
+
+// tampilkan cache dulu
+appendVideos(allVideos);
+
+// auto load video baru
+loadVideos();
 
 async function loadVideos() {
 
@@ -24,39 +48,52 @@ async function loadVideos() {
 
   try {
 
-    // random cache breaker
-    const random =
-    Math.floor(Math.random() * 999999);
+    // spam request berbeda
+    for (let i = 1; i <= 10; i++) {
 
-    const res = await fetch(
-      `/api/videos?rand=${random}`
+      const random =
+        Date.now() + "_" + i;
+
+      const res = await fetch(
+        `/api/videos?page=${i}&r=${random}`
+      );
+
+      const json = await res.json();
+
+      let videos = json.data || [];
+
+      // acak
+      videos = shuffle(videos);
+
+      // filter video baru
+      const uniqueVideos =
+      videos.filter(video => {
+
+        if (
+          loadedIds.has(video.id)
+        ) {
+          return false;
+        }
+
+        loadedIds.add(video.id);
+
+        return true;
+
+      });
+
+      // simpan
+      allVideos.push(...uniqueVideos);
+
+      // tampilkan
+      appendVideos(uniqueVideos);
+
+    }
+
+    // cache browser
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(allVideos)
     );
-
-    const json = await res.json();
-
-    let videos = json.data || [];
-
-    // acak video
-    videos = shuffle(videos);
-
-    // filter duplicate
-    const uniqueVideos =
-    videos.filter(video => {
-
-      if (loadedIds.has(video.id)) {
-        return false;
-      }
-
-      loadedIds.add(video.id);
-
-      return true;
-
-    });
-
-    // simpan semua
-    allVideos.push(...uniqueVideos);
-
-    appendVideos(uniqueVideos);
 
   } catch(err) {
 
@@ -88,6 +125,7 @@ function appendVideos(videos) {
         <img
           src="${video.thumbnail}"
           loading="lazy"
+          alt="${video.title}"
         />
 
         <div class="overlay">
@@ -103,27 +141,7 @@ function appendVideos(videos) {
 
 }
 
-// random shuffle
-function shuffle(array) {
-
-  for (
-    let i = array.length - 1;
-    i > 0;
-    i--
-  ) {
-
-    const j =
-    Math.floor(Math.random() * (i + 1));
-
-    [array[i], array[j]] =
-    [array[j], array[i]];
-
-  }
-
-  return array;
-
-}
-
+// search realtime
 searchInput.addEventListener(
   "input",
   e => {
@@ -145,6 +163,7 @@ searchInput.addEventListener(
   }
 );
 
+// infinite scroll
 window.addEventListener(
   "scroll",
   () => {
@@ -162,5 +181,25 @@ window.addEventListener(
   }
 );
 
-// load pertama
-loadVideos();
+// random shuffle
+function shuffle(array) {
+
+  for (
+    let i = array.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+    [array[i], array[j]] =
+    [array[j], array[i]];
+
+  }
+
+  return array;
+
+}
