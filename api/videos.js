@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const page = req.query.page || 1;
 
     const response = await axios.get(
-      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
+      `https://vizey.net/api/v1/videos?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
     );
 
     // cache ringan
