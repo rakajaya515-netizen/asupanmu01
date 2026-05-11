@@ -1,8 +1,16 @@
-const grid = document.getElementById("videoGrid");
-const searchInput = document.getElementById("searchInput");
+const grid =
+document.getElementById("videoGrid");
+
+const searchInput =
+document.getElementById("searchInput");
+
+const loadingText =
+document.getElementById("loading");
 
 let currentPage = 1;
+
 let loading = false;
+
 let hasNext = true;
 
 let allVideos = [];
@@ -12,6 +20,8 @@ async function loadVideos() {
   if (loading || !hasNext) return;
 
   loading = true;
+
+  loadingText.style.display = "block";
 
   try {
 
@@ -23,13 +33,16 @@ async function loadVideos() {
 
     const videos = json.data || [];
 
+    // simpan semua
     allVideos.push(...videos);
 
-    renderVideos(allVideos);
+    // tampilkan video baru
+    appendVideos(videos);
 
+    // cek next page
     hasNext =
-      json.pagination?.currentPage <
-      json.pagination?.totalPages;
+      json.pagination.currentPage <
+      json.pagination.totalPages;
 
     currentPage++;
 
@@ -39,25 +52,30 @@ async function loadVideos() {
 
   }
 
+  loadingText.style.display = "none";
+
   loading = false;
 
 }
 
-function renderVideos(videos) {
-
-  grid.innerHTML = "";
+function appendVideos(videos) {
 
   videos.forEach(video => {
 
-    const card = document.createElement("div");
+    const card =
+    document.createElement("div");
 
     card.className = "card";
 
     card.innerHTML = `
-      <a href="${video.url}" target="_blank">
+      <a
+        href="${video.url}"
+        target="_blank"
+      >
 
         <img
           src="${video.thumbnail}"
+          alt="${video.title}"
           loading="lazy"
         />
 
@@ -74,29 +92,43 @@ function renderVideos(videos) {
 
 }
 
-window.addEventListener("scroll", () => {
+searchInput.addEventListener(
+  "input",
+  e => {
 
-  if (
-    window.innerHeight + window.scrollY >=
-    document.body.offsetHeight - 500
-  ) {
+    const keyword =
+    e.target.value.toLowerCase();
 
-    loadVideos();
+    grid.innerHTML = "";
+
+    const filtered =
+    allVideos.filter(v =>
+      v.title
+      .toLowerCase()
+      .includes(keyword)
+    );
+
+    appendVideos(filtered);
 
   }
+);
 
-});
+window.addEventListener(
+  "scroll",
+  () => {
 
-searchInput.addEventListener("input", e => {
+    if (
+      window.innerHeight +
+      window.scrollY >=
+      document.body.offsetHeight - 700
+    ) {
 
-  const keyword = e.target.value.toLowerCase();
+      loadVideos();
 
-  const filtered = allVideos.filter(v =>
-    v.title.toLowerCase().includes(keyword)
-  );
+    }
 
-  renderVideos(filtered);
+  }
+);
 
-});
-
+// pertama load
 loadVideos();
