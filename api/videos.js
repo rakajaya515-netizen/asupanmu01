@@ -5,11 +5,11 @@ export default async function handler(req, res) {
   try {
 
     let page = 1;
-    let hasNext = true;
+    let totalPages = 10;
 
     let allVideos = [];
 
-    while (hasNext) {
+    do {
 
       const response = await axios.get(
         `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
@@ -17,20 +17,19 @@ export default async function handler(req, res) {
 
       const result = response.data;
 
-      if (result?.data?.length > 0) {
-
+      // gabungkan video
+      if (result?.data) {
         allVideos.push(...result.data);
-
       }
 
-      hasNext = result?.pagination?.hasNext;
+      // ambil total halaman
+      totalPages = result?.pagination?.totalPages || 1;
+
+      console.log(`Page ${page}/${totalPages}`);
 
       page++;
 
-      // safety limit
-      if (page > 100) break;
-
-    }
+    } while (page <= totalPages);
 
     // cache ringan
     res.setHeader(
@@ -41,10 +40,13 @@ export default async function handler(req, res) {
     res.status(200).json({
       success: true,
       total: allVideos.length,
+      pages: totalPages,
       data: allVideos
     });
 
   } catch (err) {
+
+    console.log(err);
 
     res.status(500).json({
       success: false,
