@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Asupanmu</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <h1 class="logo">Asupanmu</h1>
+
+  <input
+    type="text"
+    id="search"
+    placeholder="Search video..."
+  >
+</header>
+
+<main>
+  <div id="videos" class="grid"></div>
+</main>
+
+<script>
+let allVideos = [];
+
+async function loadVideos() {
+  try {
+    const res = await fetch("/api/videos");
+    const json = await res.json();
+
+    const videos = json.data || [];
+
+    allVideos = videos;
+
+    renderVideos(videos);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function renderVideos(videos) {
+  const container = document.getElementById("videos");
+
+  container.innerHTML = "";
+
+  videos.forEach(video => {
+
+    const card = document.createElement("a");
+
+    // arahkan ke halaman asli VIZEY
+    card.href =
+      video.url ||
+      video.embed_url ||
+      "#";
+
+    card.target = "_blank";
+
+    card.className = "card";
+
+    card.innerHTML = `
+      <img src="${video.thumbnail}" alt="">
+      <div class="title">
+        ${video.title}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// search realtime
+document.getElementById("search")
+.addEventListener("input", e => {
+
+  const keyword =
+    e.target.value.toLowerCase();
+
+  const filtered = allVideos.filter(v =>
+    v.title.toLowerCase()
+    .includes(keyword)
+  );
+
+  renderVideos(filtered);
+});
+
+loadVideos();
+</script>
+
+</body>
+</html>
