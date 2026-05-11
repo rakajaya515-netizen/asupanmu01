@@ -4,49 +4,20 @@ export default async function handler(req, res) {
 
   try {
 
-    let page = 1;
-    let totalPages = 9;
+    const page = req.query.page || 1;
 
-    let allVideos = [];
-
-    do {
-
-      const response = await axios.get(
-        `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
-      );
-
-      const result = response.data;
-
-      // gabungkan video
-      if (result?.data) {
-        allVideos.push(...result.data);
-      }
-
-      // ambil total halaman
-      totalPages = result?.pagination?.totalPages || 1;
-
-      console.log(`Page ${page}/${totalPages}`);
-
-      page++;
-
-    } while (page <= totalPages);
-
-    // cache ringan
-    res.setHeader(
-      "Cache-Control",
-      "s-maxage=600, stale-while-revalidate"
+    const response = await axios.get(
+      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
     );
 
-    res.status(200).json({
-      success: true,
-      total: allVideos.length,
-      pages: totalPages,
-      data: allVideos
-    });
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=300, stale-while-revalidate"
+    );
+
+    res.status(200).json(response.data);
 
   } catch (err) {
-
-    console.log(err);
 
     res.status(500).json({
       success: false,
