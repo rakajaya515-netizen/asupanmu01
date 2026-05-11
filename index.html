@@ -140,7 +140,7 @@ async function loadVideos() {
 
     allVideos.push(...videos);
 
-    renderVideos(videos);
+    appendVideos(videos);
 
     page++;
 
@@ -153,7 +153,7 @@ async function loadVideos() {
   loading = false;
 }
 
-function renderVideos(videos) {
+function appendVideos(videos) {
 
   videos.forEach(video => {
 
@@ -179,20 +179,6 @@ function renderVideos(videos) {
 
 }
 
-window.addEventListener("scroll", () => {
-
-  if (
-    window.innerHeight +
-    window.scrollY >=
-    document.body.offsetHeight - 500
-  ) {
-
-    loadVideos();
-
-  }
-
-});
-
 search.addEventListener("input", e => {
 
   const key =
@@ -206,10 +192,26 @@ search.addEventListener("input", e => {
     .includes(key)
   );
 
-  renderVideos(filtered);
+  appendVideos(filtered);
 
 });
 
+
+// INFINITE SCROLL FIX
+window.onscroll = () => {
+
+  if (
+    window.innerHeight +
+    window.scrollY >=
+    document.documentElement.scrollHeight - 300
+  ) {
+
+    loadVideos();
+
+  }
+
+};
+
 loadVideos();
 
-  </script>
+</script>
