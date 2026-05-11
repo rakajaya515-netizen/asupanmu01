@@ -1,23 +1,17 @@
 export default async function handler(req, res) {
   try {
-    const response = await fetch(
-      `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=1`,
-      {
-        headers: {
-          "Content-Type": "application/json"
-        }
+    const response = await fetch("https://api.vidara.com/videos", {
+      headers: {
+        Authorization: "Bearer " + process.env.API_KEY
       }
-    );
+    });
 
-    const data = await response.json();
+    const text = await response.text();
 
-    // cache ringan
-    res.setHeader(
-      "Cache-Control",
-      "s-maxage=3600, stale-while-revalidate"
-    );
-
-    res.status(200).json(data);
+    res.status(200).json({
+      status: response.status,
+      body: text
+    });
 
   } catch (error) {
     res.status(500).json({
