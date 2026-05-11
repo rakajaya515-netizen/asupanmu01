@@ -1,44 +1,78 @@
-// api/videos.js
-
 export default async function handler(req, res) {
 
   try {
 
     const page = req.query.page || 1;
 
-    const response = await fetch(
-      `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}&limit=20`
+    let allVideos = [];
+
+    // ======================
+    // VIZEY
+    // ======================
+
+    const vizeyRes = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=20`
     );
 
-    const json = await response.json();
+    const vizeyJson =
+      await vizeyRes.json();
 
-    const videos = json.data || [];
+    const vizeyVideos =
+      (vizeyJson.data || []).map(v => ({
 
-    // format data
-    const result = videos.map(video => ({
+        id: v.id,
 
-  id: video.id,
+        title: v.title,
 
-  title:
-    video.title || "No Title",
+        thumbnail: v.thumbnail,
 
-  thumbnail:
-    video.thumbnail || "",
+        watch:
+        `https://vizey.net/view/${v.id}`,
 
-  watch:
-    `https://vizey.net/view/${video.id}`
+        source: "VIZEY"
 
-}));
+      }));
 
-    // cache ringan
+    allVideos.push(...vizeyVideos);
+
+    // ======================
+    // DOOD EXAMPLE
+    // =====================
+
+    const doodRes = await fetch(
+      `https://doodapi.co/list?key=${process.env.DOOD_API_KEY}`
+    );
+
+    const doodJson =
+      await doodRes.json();
+
+    const doodVideos =
+      (doodJson.result || []).map(v => ({
+
+        id: v.file_code,
+
+        title: v.title,
+
+        thumbnail: v.splash_img,
+
+        watch:
+        `https://dood.so/e/${v.file_code}`,
+
+        source: "DOOD"
+
+      }));
+
+    allVideos.push(...doodVideos);
+
+    // cache
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
     );
 
-    res.status(200).json(result);
+    res.status(200).json(allVideos);
 
-  } catch (err) {
+  } catch(err) {
 
     res.status(500).json({
       error: err.message
