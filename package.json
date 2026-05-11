@@ -1,11 +1,12 @@
 {
-  "name": "asupanmu",
+  "name": "asupanindo",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Streaming video website",
+  "main": "index.js",
   "scripts": {
-    "start": "vercel dev"
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "axios": "^1.6.8"
+    "axios": "^1.7.2"
   }
 }
