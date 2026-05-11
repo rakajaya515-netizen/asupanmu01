@@ -17,19 +17,18 @@ export default async function handler(req, res) {
     // format data
     const result = videos.map(video => ({
 
-      id: video.id,
+  id: video.id,
 
-      title:
-        video.title || "No Title",
+  title:
+    video.title || "No Title",
 
-      thumbnail:
-        video.thumbnail || "",
+  thumbnail:
+    video.thumbnail || "",
 
-      // LINK HALAMAN ASLI
-      watch:
-        `https://vizey.net/view/${video.id}`
+  watch:
+    `https://vizey.net/view/${video.id}`
 
-    }));
+}));
 
     // cache ringan
     res.setHeader(
