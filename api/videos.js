@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   try {
 
     let page = 1;
-    let totalPages = 1;
+    let totalPages = 9;
 
     let allVideos = [];
 
