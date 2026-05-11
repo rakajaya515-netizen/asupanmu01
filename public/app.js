@@ -1,205 +1,70 @@
-const grid =
-document.getElementById("videoGrid");
-
-const searchInput =
-document.getElementById("searchInput");
-
-const loadingText =
-document.getElementById("loading");
-
-let loading = false;
-
-// semua video unik
-let allVideos = [];
-
-// simpan ID video
-const loadedIds = new Set();
-
-// simpan cache browser
-const STORAGE_KEY = "ASUPANMU_VIDEOS";
-
-// load cache awal
-const cached =
-JSON.parse(
-  localStorage.getItem(STORAGE_KEY)
-) || [];
-
-cached.forEach(v => {
-
-  loadedIds.add(v.id);
-
-});
-
-allVideos = cached;
-
-// tampilkan cache dulu
-appendVideos(allVideos);
-
-// auto load video baru
-loadVideos();
-
+const videoGrid = document.getElementById('videoGrid');
 async function loadVideos() {
+  if (isLoading) return;
 
-  if (loading) return;
-
-  loading = true;
-
-  loadingText.style.display = "block";
+  isLoading = true;
+  loading.style.display = 'block';
 
   try {
+    const response = await fetch(`/api/videos?page=${currentPage}`);
+    const result = await response.json();
 
-    // spam request berbeda
-    for (let i = 1; i <= 10; i++) {
+    if (result.success) {
+      const videos = result.data;
 
-      const random =
-        Date.now() + "_" + i;
+      allVideos = [...allVideos, ...videos];
 
-      const res = await fetch(
-        `/api/videos?page=${i}&r=${random}`
-      );
+      renderVideos(allVideos);
 
-      const json = await res.json();
-
-      let videos = json.data || [];
-
-      // acak
-      videos = shuffle(videos);
-
-      // filter video baru
-      const uniqueVideos =
-      videos.filter(video => {
-
-        if (
-          loadedIds.has(video.id)
-        ) {
-          return false;
-        }
-
-        loadedIds.add(video.id);
-
-        return true;
-
-      });
-
-      // simpan
-      allVideos.push(...uniqueVideos);
-
-      // tampilkan
-      appendVideos(uniqueVideos);
-
+      currentPage++;
     }
-
-    // cache browser
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(allVideos)
-    );
-
-  } catch(err) {
-
-    console.log(err);
-
+  } catch (err) {
+    console.error(err);
   }
 
-  loadingText.style.display = "none";
-
-  loading = false;
-
+  loading.style.display = 'none';
+  isLoading = false;
 }
 
-function appendVideos(videos) {
+function renderVideos(videos) {
+  videoGrid.innerHTML = '';
 
   videos.forEach(video => {
-
-    const card =
-    document.createElement("div");
-
-    card.className = "card";
+    const card = document.createElement('div');
+    card.className = 'card';
 
     card.innerHTML = `
-      <a
-        href="${video.url}"
-        target="_blank"
-      >
+      <a href="https://vizey.net/api/v1/videos?apikey=dummy&id=${video.id}" target="_blank">
+        <img class="thumbnail" src="${video.thumbnail}" alt="${video.title}">
 
-        <img
-          src="${video.thumbnail}"
-          loading="lazy"
-          alt="${video.title}"
-        />
-
-        <div class="overlay">
-          <h3>${video.title}</h3>
+        <div class="card-content">
+          <div class="title">${video.title}</div>
+          <div class="views">${video.views || 0} views</div>
         </div>
-
       </a>
     `;
 
-    grid.appendChild(card);
-
+    videoGrid.appendChild(card);
   });
-
 }
 
-// search realtime
-searchInput.addEventListener(
-  "input",
-  e => {
+searchInput.addEventListener('input', () => {
+  const keyword = searchInput.value.toLowerCase();
 
-    const keyword =
-    e.target.value.toLowerCase();
+  const filtered = allVideos.filter(video =>
+    video.title.toLowerCase().includes(keyword)
+  );
 
-    grid.innerHTML = "";
+  renderVideos(filtered);
+});
 
-    const filtered =
-    allVideos.filter(v =>
-      v.title
-      .toLowerCase()
-      .includes(keyword)
-    );
-
-    appendVideos(filtered);
-
-  }
-);
-
-// infinite scroll
-window.addEventListener(
-  "scroll",
-  () => {
-
-    if (
-      window.innerHeight +
-      window.scrollY >=
-      document.body.offsetHeight - 700
-    ) {
-
-      loadVideos();
-
-    }
-
-  }
-);
-
-// random shuffle
-function shuffle(array) {
-
-  for (
-    let i = array.length - 1;
-    i > 0;
-    i--
+window.addEventListener('scroll', () => {
+  if (
+    window.innerHeight + window.scrollY >=
+    document.body.offsetHeight - 500
   ) {
-
-    const j =
-      Math.floor(
-        Math.random() * (i + 1)
-      );
-
-    [array[i], array[j]] =
-    [array[j], array[i]];
-
+    loadVideos();
   }
+});
 
-  return array;
-
-}
+loadVideos();
