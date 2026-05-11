@@ -2,6 +2,7 @@ const grid = document.getElementById("videoGrid");
 const searchInput = document.getElementById("searchInput");
 
 let allVideos = [];
+let visible = 20;
 
 async function loadVideos() {
 
@@ -13,20 +14,25 @@ async function loadVideos() {
 
     allVideos = json.data || [];
 
-    renderVideos(allVideos);
+    renderVideos();
 
   } catch(err) {
 
     console.log(err);
 
   }
+
 }
 
-function renderVideos(videos){
+function renderVideos(filter = "") {
 
   grid.innerHTML = "";
 
-  videos.forEach(video => {
+  const filtered = allVideos.filter(v =>
+    v.title.toLowerCase().includes(filter)
+  );
+
+  filtered.slice(0, visible).forEach(video => {
 
     const card = document.createElement("div");
 
@@ -34,10 +40,16 @@ function renderVideos(videos){
 
     card.innerHTML = `
       <a href="${video.url}" target="_blank">
-        <img src="${video.thumbnail}" loading="lazy"/>
+
+        <img
+          src="${video.thumbnail}"
+          loading="lazy"
+        />
+
         <div class="overlay">
           <h3>${video.title}</h3>
         </div>
+
       </a>
     `;
 
@@ -47,15 +59,26 @@ function renderVideos(videos){
 
 }
 
-searchInput.addEventListener("input", (e)=>{
+searchInput.addEventListener("input", e => {
 
-  const keyword = e.target.value.toLowerCase();
+  renderVideos(e.target.value.toLowerCase());
 
-  const filtered = allVideos.filter(v =>
-    v.title.toLowerCase().includes(keyword)
-  );
+});
 
-  renderVideos(filtered);
+window.addEventListener("scroll", () => {
+
+  if (
+    window.innerHeight + window.scrollY
+    >= document.body.offsetHeight - 500
+  ) {
+
+    visible += 20;
+
+    renderVideos(
+      searchInput.value.toLowerCase()
+    );
+
+  }
 
 });
 
