@@ -102,45 +102,65 @@ id="videos"
 class="grid">
 </div>
 
+
 <script>
+
+let page = 1;
+let loading = false;
+let finished = false;
+
+const container =
+document.getElementById("videos");
+
+const search =
+document.getElementById("search");
 
 let allVideos = [];
 
 async function loadVideos() {
 
+  if (loading || finished) return;
+
+  loading = true;
+
   try {
 
     const res =
-      await fetch("/api/videos");
+    await fetch(`/api/videos?page=${page}`);
 
     const videos =
-      await res.json();
+    await res.json();
 
-    allVideos = videos;
+    if (!videos.length) {
+
+      finished = true;
+      return;
+
+    }
+
+    allVideos.push(...videos);
 
     renderVideos(videos);
+
+    page++;
 
   } catch(err) {
 
     console.log(err);
 
   }
+
+  loading = false;
 }
 
 function renderVideos(videos) {
 
-  const container =
-    document.getElementById("videos");
-
-  container.innerHTML = "";
-
   videos.forEach(video => {
 
     const card =
-      document.createElement("a");
+    document.createElement("a");
 
-    card.href =
-      video.watch;
+    card.href = video.watch;
 
     card.target = "_blank";
 
@@ -156,20 +176,35 @@ function renderVideos(videos) {
     container.appendChild(card);
 
   });
+
 }
 
-document
-.getElementById("search")
-.addEventListener("input", e => {
+window.addEventListener("scroll", () => {
+
+  if (
+    window.innerHeight +
+    window.scrollY >=
+    document.body.offsetHeight - 500
+  ) {
+
+    loadVideos();
+
+  }
+
+});
+
+search.addEventListener("input", e => {
 
   const key =
-    e.target.value.toLowerCase();
+  e.target.value.toLowerCase();
+
+  container.innerHTML = "";
 
   const filtered =
-    allVideos.filter(v =>
-      v.title.toLowerCase()
-      .includes(key)
-    );
+  allVideos.filter(v =>
+    v.title.toLowerCase()
+    .includes(key)
+  );
 
   renderVideos(filtered);
 
@@ -177,7 +212,4 @@ document
 
 loadVideos();
 
-</script>
-
-</body>
-</html>
+  </script>
