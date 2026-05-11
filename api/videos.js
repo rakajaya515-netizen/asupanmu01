@@ -1,24 +1,27 @@
-const axios = require('axios');
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
-    const page = req.query.page || 1;
-
-    const response = await axios.get(
-      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
+    const response = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=1`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
     );
 
+    const data = await response.json();
+
+    // cache ringan
     res.setHeader(
-      'Cache-Control',
-      's-maxage=300, stale-while-revalidate=600'
+      "Cache-Control",
+      "s-maxage=3600, stale-while-revalidate"
     );
 
-    res.status(200).json(response.data);
+    res.status(200).json(data);
+
   } catch (error) {
     res.status(500).json({
-      success: false,
-      message: 'Failed fetch video',
       error: error.message
     });
   }
-};
+}
