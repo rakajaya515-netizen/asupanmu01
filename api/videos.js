@@ -2,30 +2,34 @@ export default async function handler(req, res) {
 
   try {
 
-    let allVideos = [];
+    // ambil list video
+    const response = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=1&limit=50`
+    );
 
-    // ambil 7 halaman
-    for(let page = 1; page <= 7; page++) {
+    const json = await response.json();
 
-      const response = await fetch(
-        `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}`
-      );
+    const videos = json.data || [];
 
-      const json = await response.json();
+    // format data untuk frontend
+    const formatted = videos.map(video => ({
+      id: video.id,
+      title: video.title,
+      thumbnail: video.thumbnail,
 
-      if(json.data) {
-        allVideos.push(...json.data);
-      }
-    }
+      // halaman detail asli
+      watch:
+      `https://vizey.net/api/v1/videos?apikey=${process.env.API_KEY}&id=${video.id}`
+    }));
 
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
     );
 
-    res.status(200).json(allVideos);
+    res.status(200).json(formatted);
 
-  } catch(err) {
+  } catch (err) {
 
     res.status(500).json({
       error: err.message
