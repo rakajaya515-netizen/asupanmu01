@@ -1,3 +1,5 @@
+// api/videos.js
+
 export default async function handler(req, res) {
 
   try {
@@ -12,19 +14,24 @@ export default async function handler(req, res) {
 
     const videos = json.data || [];
 
+    // format data
     const result = videos.map(video => ({
 
       id: video.id,
 
-      title: video.title || "No Title",
+      title:
+        video.title || "No Title",
 
-      thumbnail: video.thumbnail || "",
+      thumbnail:
+        video.thumbnail || "",
 
+      // LINK HALAMAN ASLI
       watch:
-      `https://vizey.net/api/v1/videos?apikey=${process.env.API_KEY}&id=${video.id}`
+        `https://vizey.net/d/${video.id}`
 
     }));
 
+    // cache ringan
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
