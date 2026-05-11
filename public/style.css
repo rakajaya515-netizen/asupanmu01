@@ -15,13 +15,13 @@ header{
   top:0;
   z-index:999;
   background:#050505;
-  padding:20px 16px;
+  padding:20px 15px;
 }
 
 h1{
-  font-size:40px;
-  font-weight:700;
   color:#8b5cf6;
+  font-size:42px;
+  font-weight:700;
   margin-bottom:15px;
 }
 
@@ -31,7 +31,7 @@ h1{
 
 .search-box input{
   width:100%;
-  padding:14px;
+  padding:15px;
   border:none;
   outline:none;
   border-radius:18px;
@@ -56,9 +56,11 @@ h1{
 
 .card img{
   width:100%;
-  height:290px;
+  height:280px;
   object-fit:cover;
   display:block;
+
+  content-visibility:auto;
 }
 
 .overlay{
@@ -66,6 +68,7 @@ h1{
   bottom:0;
   width:100%;
   padding:10px;
+
   background:linear-gradient(
     transparent,
     rgba(0,0,0,0.9)
@@ -73,15 +76,26 @@ h1{
 }
 
 .overlay h3{
-  font-size:15px;
+  font-size:14px;
   font-weight:500;
 }
 
+#loading{
+  text-align:center;
+  padding:20px;
+  color:white;
+  display:none;
+}
+
+a{
+  text-decoration:none;
+  color:white;
+}
+
 @media(max-width:500px){
+
   .card img{
     height:240px;
   }
-}
-img{
-  content-visibility:auto;
+
 }
