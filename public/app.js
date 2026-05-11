@@ -7,17 +7,16 @@ document.getElementById("searchInput");
 const loadingText =
 document.getElementById("loading");
 
-let currentPage = 1;
-
 let loading = false;
-
-let hasNext = true;
 
 let allVideos = [];
 
+// simpan ID agar tidak duplikat
+const loadedIds = new Set();
+
 async function loadVideos() {
 
-  if (loading || !hasNext) return;
+  if (loading) return;
 
   loading = true;
 
@@ -25,26 +24,39 @@ async function loadVideos() {
 
   try {
 
+    // random cache breaker
+    const random =
+    Math.floor(Math.random() * 999999);
+
     const res = await fetch(
-      `/api/videos?page=${currentPage}`
+      `/api/videos?rand=${random}`
     );
 
     const json = await res.json();
 
-    const videos = json.data || [];
+    let videos = json.data || [];
+
+    // acak video
+    videos = shuffle(videos);
+
+    // filter duplicate
+    const uniqueVideos =
+    videos.filter(video => {
+
+      if (loadedIds.has(video.id)) {
+        return false;
+      }
+
+      loadedIds.add(video.id);
+
+      return true;
+
+    });
 
     // simpan semua
-    allVideos.push(...videos);
+    allVideos.push(...uniqueVideos);
 
-    // tampilkan video baru
-    appendVideos(videos);
-
-    // cek next page
-    hasNext =
-      json.pagination.currentPage <
-      json.pagination.totalPages;
-
-    currentPage++;
+    appendVideos(uniqueVideos);
 
   } catch(err) {
 
@@ -75,7 +87,6 @@ function appendVideos(videos) {
 
         <img
           src="${video.thumbnail}"
-          alt="${video.title}"
           loading="lazy"
         />
 
@@ -89,6 +100,27 @@ function appendVideos(videos) {
     grid.appendChild(card);
 
   });
+
+}
+
+// random shuffle
+function shuffle(array) {
+
+  for (
+    let i = array.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+    Math.floor(Math.random() * (i + 1));
+
+    [array[i], array[j]] =
+    [array[j], array[i]];
+
+  }
+
+  return array;
 
 }
 
@@ -130,5 +162,5 @@ window.addEventListener(
   }
 );
 
-// pertama load
+// load pertama
 loadVideos();
