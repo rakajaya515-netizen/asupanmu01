@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
       // LINK HALAMAN ASLI
       watch:
-        `https://vizey.net/v/${video.id}`
+        `https://vizey.net/e/${video.id}`
 
     }));
 
