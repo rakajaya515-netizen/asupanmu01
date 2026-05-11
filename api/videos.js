@@ -2,32 +2,17 @@ export default async function handler(req, res) {
 
   try {
 
-    let allVideos = [];
+    const page = req.query.page || 1;
 
-    const totalPages = 10;
-
-    for (let page = 1; page <= totalPages; page++) {
-
-      const response = await fetch(
-        `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}&limit=100`
-      );
-
-      const json = await response.json();
-
-      const videos = json.data || [];
-
-      allVideos.push(...videos);
-
-    }
-
-    // hapus duplikat
-    const uniqueVideos = Array.from(
-      new Map(
-        allVideos.map(v => [v.id, v])
-      ).values()
+    const response = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.API_KEY}&page=${page}&limit=20`
     );
 
-    const result = uniqueVideos.map(video => ({
+    const json = await response.json();
+
+    const videos = json.data || [];
+
+    const result = videos.map(video => ({
 
       id: video.id,
 
@@ -40,7 +25,6 @@ export default async function handler(req, res) {
 
     }));
 
-    // cache
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
