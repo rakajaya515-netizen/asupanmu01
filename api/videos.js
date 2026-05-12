@@ -10,59 +10,90 @@ export default async function handler(req, res) {
     // VIZEY
     // ======================
 
-    const vizeyRes = await fetch(
-      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=20`
-    );
+    try {
 
-    const vizeyJson =
-      await vizeyRes.json();
+      const vizeyRes = await fetch(
+        `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=20`
+      );
 
-    const vizeyVideos =
-      (vizeyJson.data || []).map(v => ({
+      const vizeyJson =
+        await vizeyRes.json();
 
-        id: v.id,
+      const vizeyVideos =
+        (vizeyJson.data || []).map(v => ({
 
-        title: v.title,
+          id: v.id,
 
-        thumbnail: v.thumbnail,
+          title:
+            v.title || "No Title",
 
-        watch:
-        `https://vizey.net/view/${v.id}`,
+          thumbnail:
+            v.thumbnail || "",
 
-        source: "VIZEY"
+          watch:
+            `https://vizey.net/view/${v.id}`,
 
-      }));
+          source: "VIZEY"
 
-    allVideos.push(...vizeyVideos);
+        }));
+
+      allVideos.push(...vizeyVideos);
+
+    } catch(err) {
+
+      console.log("VIZEY ERROR:", err);
+
+    }
 
     // ======================
-    // DOOD EXAMPLE
-    // =====================
+    // DOOD
+    // ======================
 
-    const doodRes = await fetch(
-      `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}`
+    try {
+
+      const doodRes = await fetch(
+        `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}`
+      );
+
+      const doodJson =
+        await doodRes.json();
+
+      console.log(doodJson);
+
+      const doodVideos =
+        (
+          doodJson.result?.files || []
+        ).map(v => ({
+
+          id: v.file_code,
+
+          title:
+            v.title || "No Title",
+
+          thumbnail:
+            v.splash_img ||
+            v.single_img ||
+            "",
+
+          watch:
+            `https://dood.so/e/${v.file_code}`,
+
+          source: "DOOD"
+
+        }));
+
+      allVideos.push(...doodVideos);
+
+    } catch(err) {
+
+      console.log("DOOD ERROR:", err);
+
+    }
+
+    // acak video
+    allVideos.sort(() =>
+      Math.random() - 0.5
     );
-
-    const doodJson =
-      await doodRes.json();
-
-    const doodVideos =
-      (doodJson.result || []).map(v => ({
-
-        id: v.file_code,
-
-        title: v.title,
-
-        thumbnail: v.splash_img,
-
-        watch:
-        `https://dood.so/e/${v.file_code}`,
-
-        source: "DOOD"
-
-      }));
-
-    allVideos.push(...doodVideos);
 
     // cache
     res.setHeader(
