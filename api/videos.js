@@ -2,7 +2,8 @@ export default async function handler(req, res) {
 
   try {
 
-    const page = req.query.page || 1;
+    const page =
+      Number(req.query.page || 1);
 
     let allVideos = [];
 
@@ -10,100 +11,104 @@ export default async function handler(req, res) {
     // VIZEY
     // ======================
 
-    try {
+    const vizeyRes = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=12`
+    );
 
-      const vizeyRes = await fetch(
-        `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=20`
-      );
+    const vizeyJson =
+      await vizeyRes.json();
 
-      const vizeyJson =
-        await vizeyRes.json();
+    const vizeyVideos =
+      (vizeyJson.data || []).map(v => ({
 
-      const vizeyVideos =
-        (vizeyJson.data || []).map(v => ({
+        id: `vz_${v.id}`,
 
-          id: v.id,
+        title: v.title,
 
-          title:
-            v.title || "No Title",
+        thumbnail:
+          v.thumbnail ||
+          "https://via.placeholder.com/300x450?text=Asupanmu",
 
-          thumbnail:
-            v.thumbnail || "",
+        watch:
+          `https://vizey.net/view/${v.id}`,
 
-          watch:
-            `https://vizey.net/view/${v.id}`,
+        source: "VIZEY",
 
-          source: "VIZEY"
+        createdAt:
+          new Date(v.createdAt || 0).getTime()
 
-        }));
+      }));
 
-      allVideos.push(...vizeyVideos);
-
-    } catch(err) {
-
-      console.log("VIZEY ERROR:", err);
-
-    }
+    allVideos.push(...vizeyVideos);
 
     // ======================
     // DOOD
     // ======================
 
-    try {
-
-      const doodRes = await fetch(
-        `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}`
-      );
-
-      const doodJson =
-        await doodRes.json();
-
-      console.log(doodJson);
-
-      const doodVideos =
-        (
-          doodJson.result?.files || []
-        ).map(v => ({
-
-          id: v.file_code,
-
-          title:
-            v.title || "No Title",
-
-          thumbnail:
-            v.splash_img ||
-            v.single_img ||
-            "",
-
-          watch:
-            `https://dood.so/d/${v.file_code}`,
-
-          source: "DOOD"
-
-        }));
-
-      allVideos.push(...doodVideos);
-
-    } catch(err) {
-
-      console.log("DOOD ERROR:", err);
-
-    }
-
-    // acak video
-    allVideos.sort(() =>
-      Math.random() - 0.5
+    const doodRes = await fetch(
+      `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}`
     );
 
-    // cache
+    const doodJson =
+      await doodRes.json();
+
+    const doodVideos =
+      (doodJson.result?.files || []).map(v => ({
+
+        id: `dd_${v.file_code}`,
+
+        title:
+          v.title || "Untitled",
+
+        thumbnail:
+          v.splash_img ||
+          "https://via.placeholder.com/300x450?text=DOOD",
+
+        watch:
+          `https://dood.so/d/${v.file_code}`,
+
+        source: "DOOD",
+
+        createdAt:
+          new Date(v.uploaded || 0).getTime()
+
+      }));
+
+    allVideos.push(...doodVideos);
+
+    // ======================
+    // HAPUS DUPLIKAT
+    // ======================
+
+    const uniqueVideos =
+      Array.from(
+
+        new Map(
+          allVideos.map(v => [v.id, v])
+        ).values()
+
+      );
+
+    // ======================
+    // SORT TERBARU
+    // ======================
+
+    uniqueVideos.sort(
+      (a,b) => b.createdAt - a.createdAt
+    );
+
+    // ======================
+    // CACHE
+    // ======================
+
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
     );
 
-    res.status(200).json(allVideos);
+    res.status(200).json(uniqueVideos);
 
-  } catch(err) {
+  } catch(err){
 
     res.status(500).json({
       error: err.message
