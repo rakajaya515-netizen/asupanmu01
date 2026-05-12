@@ -76,7 +76,7 @@ export default async function handler(req, res) {
             "",
 
           watch:
-            `https://dood.so/d/${v.file_code}`,
+            `https://dood.so/e/${v.file_code}`,
 
           source: "DOOD"
 
