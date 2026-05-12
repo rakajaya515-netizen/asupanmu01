@@ -253,6 +253,10 @@ let finished = false;
 
 let allVideos = [];
 
+/* simpan ID video */
+
+const loadedIds = new Set();
+
 const container =
 document.getElementById("videos");
 
@@ -263,32 +267,33 @@ const loadingText =
 document.getElementById("loading");
 
 /* =========================
-   LOAD ADS
+   TOP ADS
 ========================= */
 
-function loadAds(){
+function loadTopAds(){
 
-  // top banner
+  const adBox =
+  document.getElementById("top-ad");
 
-  const s1 =
+  const script =
   document.createElement("script");
 
-  s1.async = true;
+  script.async = true;
 
-  s1.src =
+  script.src =
   "https://pl29427175.profitablecpmratenetwork.com/f7b819456e7cdf0bf9a38a0f984058c2/invoke.js";
 
-  document.body.appendChild(s1);
+  adBox.appendChild(script);
 
-  // social bar
+  /* social bar */
 
-  const s2 =
+  const social =
   document.createElement("script");
 
-  s2.src =
+  social.src =
   "https://pl29427176.profitablecpmratenetwork.com/72/21/31/7221317088cb071d0f5a805d2f99458e.js";
 
-  document.body.appendChild(s2);
+  document.body.appendChild(social);
 
 }
 
@@ -329,9 +334,41 @@ async function loadVideos(){
 
     }
 
-    appendVideos(videos);
+    /* FILTER DUPLICATE */
 
-    allVideos.push(...videos);
+    const uniqueVideos =
+    videos.filter(v=>{
+
+      if(
+        !v.id ||
+        loadedIds.has(v.id)
+      ){
+
+        return false;
+
+      }
+
+      loadedIds.add(v.id);
+
+      return true;
+
+    });
+
+    if(uniqueVideos.length === 0){
+
+      page++;
+
+      loading = false;
+
+      loadVideos();
+
+      return;
+
+    }
+
+    appendVideos(uniqueVideos);
+
+    allVideos.push(...uniqueVideos);
 
     page++;
 
@@ -393,39 +430,52 @@ function appendVideos(videos){
 
     container.appendChild(card);
 
-    /* ADS tiap 12 video */
+    /* ADS setiap 15 video */
 
-    if(index % 12 === 0){
+    if(index % 15 === 0 && index !== 0){
 
-      const ads =
-      document.createElement("div");
-
-      ads.className =
-      "ads-box";
-
-      const adDiv =
-      document.createElement("div");
-
-      adDiv.id =
-      "ads-" + index;
-
-      ads.appendChild(adDiv);
-
-      container.appendChild(ads);
-
-      const adScript =
-      document.createElement("script");
-
-      adScript.async = true;
-
-      adScript.src =
-      "https://pl29427175.profitablecpmratenetwork.com/f7b819456e7cdf0bf9a38a0f984058c2/invoke.js";
-
-      document.body.appendChild(adScript);
+      createInlineAds(index);
 
     }
 
   });
+
+}
+
+/* =========================
+   INLINE ADS
+========================= */
+
+function createInlineAds(index){
+
+  const ads =
+  document.createElement("div");
+
+  ads.className =
+  "ads-box";
+
+  ads.style.gridColumn =
+  "span 2";
+
+  const iframe =
+  document.createElement("iframe");
+
+  iframe.src =
+  "https://www.profitablecpmratenetwork.com/k2x9zpa1y?key=e0134ec760109876f301830cf34ed8d6";
+
+  iframe.width = "100%";
+
+  iframe.height = "100";
+
+  iframe.style.border =
+  "none";
+
+  iframe.style.borderRadius =
+  "14px";
+
+  ads.appendChild(iframe);
+
+  container.appendChild(ads);
 
 }
 
@@ -483,11 +533,8 @@ window.addEventListener(
    START
 ========================= */
 
-loadAds();
+loadTopAds();
 
 loadVideos();
 
 </script>
-
-</body>
-</html>
