@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     // =====================
 
     const doodRes = await fetch(
-      `https://doodapi.co/list?key=${process.env.DOOD_API_KEY}`
+      `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}`
     );
 
     const doodJson =
