@@ -369,33 +369,32 @@ function appendVideos(videos){
 
     if(index % 12 === 0){
 
-      const ads =
-      document.createElement("div");
+  const ads = document.createElement("div");
 
-      ads.className =
-      "ads-box";
+  ads.className = "ads-box";
 
-      ads.innerHTML = `
+  // container iklan
+  const adContainer =
+  document.createElement("div");
 
-      <script
-      async="async"
-      data-cfasync="false"
-      src="https://pl29427175.profitablecpmratenetwork.com/f7b819456e7cdf0bf9a38a0f984058c2/invoke.js">
-      </script>
+  adContainer.id =
+  "container-f7b819456e7cdf0bf9a38a0f984058c2-" + index;
 
-      <div
-      id="container-f7b819456e7cdf0bf9a38a0f984058c2">
-      </div>
+  ads.appendChild(adContainer);
 
-      `;
+  // script iklan
+  const s = document.createElement("script");
 
-      container.appendChild(ads);
+  s.async = true;
+
+  s.src =
+  "https://pl29427175.profitablecpmratenetwork.com/f7b819456e7cdf0bf9a38a0f984058c2/invoke.js";
+
+  ads.appendChild(s);
+
+  container.appendChild(ads);
 
     }
-
-  });
-
-}
 
 /* SEARCH */
 
