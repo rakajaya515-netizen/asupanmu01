@@ -1,16 +1,9 @@
-<!-- index.html -->
-
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
 
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
-/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Asupanmu</title>
 
@@ -24,7 +17,7 @@ body{
   margin:0;
   background:#000;
   color:#fff;
-  font-family:sans-serif;
+  font-family:Arial,sans-serif;
 }
 
 /* NAVBAR */
@@ -39,21 +32,20 @@ body{
 
   padding:15px;
 
-  border-bottom:
-  1px solid #111;
+  border-bottom:1px solid #111;
+
+  backdrop-filter:blur(10px);
 
 }
 
 .logo{
 
-  font-size:38px;
+  font-size:36px;
   font-weight:bold;
 
   color:#8b5cf6;
 
-  margin-bottom:12px;
-
-  letter-spacing:1px;
+  margin-bottom:10px;
 
 }
 
@@ -65,15 +57,13 @@ body{
 
   border:none;
 
-  border-radius:18px;
+  border-radius:16px;
 
   background:#111;
 
   color:white;
 
   font-size:16px;
-
-  outline:none;
 
   box-sizing:border-box;
 
@@ -104,19 +94,28 @@ body{
 
   border-radius:18px;
 
-  background:#111;
-
   text-decoration:none;
 
   color:white;
+
+  background:#111;
+
+  transition:.2s;
+
+}
+
+.card:hover{
+
+  transform:scale(.98);
+
+  opacity:.9;
 
 }
 
 .card img{
 
   width:100%;
-
-  height:320px;
+  height:300px;
 
   object-fit:cover;
 
@@ -136,13 +135,52 @@ body{
 
   padding:12px;
 
-  font-size:15px;
-
   background:
   linear-gradient(
     transparent,
     rgba(0,0,0,.95)
   );
+
+  font-size:14px;
+
+}
+
+/* SOURCE */
+
+.source{
+
+  position:absolute;
+
+  top:10px;
+  right:10px;
+
+  background:#8b5cf6;
+
+  padding:4px 8px;
+
+  border-radius:10px;
+
+  font-size:12px;
+
+}
+
+/* ADS */
+
+.ads-box{
+
+  width:100%;
+
+  padding:14px;
+
+  box-sizing:border-box;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  overflow:hidden;
 
 }
 
@@ -180,6 +218,22 @@ body{
 
 </div>
 
+<!-- ADS TOP -->
+
+<div class="ads-box">
+
+<script
+async="async"
+data-cfasync="false"
+src="https://pl29427175.profitablecpmratenetwork.com/f7b819456e7cdf0bf9a38a0f984058c2/invoke.js">
+</script>
+
+<div
+id="container-f7b819456e7cdf0bf9a38a0f984058c2">
+</div>
+
+</div>
+
 <!-- VIDEO GRID -->
 
 <div
@@ -187,15 +241,23 @@ id="videos"
 class="grid">
 </div>
 
+<!-- LOADING -->
+
 <div
 id="loading"
 class="loading">
 Loading...
 </div>
 
-<script>
+<!-- ADS SOCIAL BAR -->
 
-// STATE
+<script src="https://pl29427176.profitablecpmratenetwork.com/72/21/31/7221317088cb071d0f5a805d2f99458e.js"></script>
+
+<!-- ADS POPUNDER -->
+
+<script src="https://pl29427174.profitablecpmratenetwork.com/9c/11/58/9c1158865986eab2869ce0bff8d7ea4b.js"></script>
+
+<script>
 
 let page = 1;
 
@@ -205,29 +267,24 @@ let finished = false;
 
 let allVideos = [];
 
-// ELEMENT
-
 const container =
 document.getElementById("videos");
-
-const loadingText =
-document.getElementById("loading");
 
 const search =
 document.getElementById("search");
 
-// LOAD VIDEO
+const loadingText =
+document.getElementById("loading");
 
-async function loadVideos() {
+/* LOAD VIDEO */
 
-  if (loading || finished) return;
+async function loadVideos(){
+
+  if(loading || finished) return;
 
   loading = true;
 
-  loadingText.innerText =
-  "Loading...";
-
-  try {
+  try{
 
     const res =
     await fetch(`/api/videos?page=${page}`);
@@ -235,7 +292,10 @@ async function loadVideos() {
     const videos =
     await res.json();
 
-    if (!videos.length) {
+    if(
+      !Array.isArray(videos) ||
+      videos.length === 0
+    ){
 
       finished = true;
 
@@ -252,7 +312,7 @@ async function loadVideos() {
 
     page++;
 
-  } catch(err) {
+  }catch(err){
 
     console.log(err);
 
@@ -262,26 +322,29 @@ async function loadVideos() {
   }
 
   loading = false;
+
 }
 
-// TAMPILKAN VIDEO
+/* APPEND VIDEO */
 
-function appendVideos(videos) {
+function appendVideos(videos){
 
-  videos.forEach(video => {
+  videos.forEach((video,index)=>{
 
     const card =
     document.createElement("a");
 
-    // LINK HALAMAN ASLI VIZEY
-    card.href = video.watch;
+    card.href =
+    video.watch;
 
-    card.target = "_blank";
+    card.target =
+    "_blank";
 
     card.rel =
     "noopener noreferrer";
 
-    card.className = "card";
+    card.className =
+    "card";
 
     card.innerHTML = `
 
@@ -289,6 +352,10 @@ function appendVideos(videos) {
         src="${video.thumbnail}"
         loading="lazy"
       >
+
+      <div class="source">
+        ${video.source || "VIDEO"}
+      </div>
 
       <div class="title">
         ${video.title}
@@ -298,13 +365,41 @@ function appendVideos(videos) {
 
     container.appendChild(card);
 
+    /* ADS TIAP 12 VIDEO */
+
+    if(index % 12 === 0){
+
+      const ads =
+      document.createElement("div");
+
+      ads.className =
+      "ads-box";
+
+      ads.innerHTML = `
+
+      <script
+      async="async"
+      data-cfasync="false"
+      src="https://pl29427175.profitablecpmratenetwork.com/f7b819456e7cdf0bf9a38a0f984058c2/invoke.js">
+      </script>
+
+      <div
+      id="container-f7b819456e7cdf0bf9a38a0f984058c2">
+      </div>
+
+      `;
+
+      container.appendChild(ads);
+
+    }
+
   });
 
 }
 
-// SEARCH
+/* SEARCH */
 
-search.addEventListener("input", e => {
+search.addEventListener("input",e=>{
 
   const key =
   e.target.value.toLowerCase();
@@ -312,7 +407,7 @@ search.addEventListener("input", e => {
   container.innerHTML = "";
 
   const filtered =
-  allVideos.filter(v =>
+  allVideos.filter(v=>
 
     v.title
     .toLowerCase()
@@ -324,11 +419,11 @@ search.addEventListener("input", e => {
 
 });
 
-// INFINITE SCROLL
+/* INFINITE SCROLL */
 
-window.onscroll = () => {
+window.onscroll = ()=>{
 
-  if (
+  if(
 
     window.innerHeight +
     window.scrollY >=
@@ -336,7 +431,7 @@ window.onscroll = () => {
     document.documentElement
     .scrollHeight - 500
 
-  ) {
+  ){
 
     loadVideos();
 
@@ -344,7 +439,7 @@ window.onscroll = () => {
 
 };
 
-// START
+/* START */
 
 loadVideos();
 
