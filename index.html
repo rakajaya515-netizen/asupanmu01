@@ -336,23 +336,31 @@ async function loadVideos(){
 
     /* FILTER DUPLICATE */
 
-    const uniqueVideos =
-    videos.filter(v=>{
+    const uniqueVideos = videos
 
-      if(
-        !v.id ||
-        loadedIds.has(v.id)
-      ){
+.sort((a,b)=>{
 
-        return false;
+  return new Date(b.createdAt)
+  - new Date(a.createdAt);
 
-      }
+})
 
-      loadedIds.add(v.id);
+.filter(v=>{
 
-      return true;
+  if(
+    !v.id ||
+    loadedIds.has(v.id)
+  ){
 
-    });
+    return false;
+
+  }
+
+  loadedIds.add(v.id);
+
+  return true;
+
+});
 
     if(uniqueVideos.length === 0){
 
