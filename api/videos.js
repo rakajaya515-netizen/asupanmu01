@@ -65,7 +65,7 @@ export default async function handler(req, res) {
           "https://via.placeholder.com/300x450?text=DOOD",
 
         watch:
-          `https://dood.so/d/${v.file_code}`,
+          `https://playmogo.com/d/${v.file_code}`,
 
         source: "DOOD",
 
