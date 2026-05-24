@@ -30,7 +30,7 @@ export default async function handler(req, res) {
           "https://via.placeholder.com/300x450?text=Asupanmu",
 
         watch:
-          `https://videeyy.co/d/${v.id}`,
+          `https://v1deeyy.click/d/${v.id}`,
 
         source: "VIZEY",
 
