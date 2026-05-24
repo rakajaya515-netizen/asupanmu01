@@ -1,8 +1,7 @@
 {
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
+  "functions": {
+    "api/videos.js": {
+      "maxDuration": 10
     }
-  ]
+  }
 }
