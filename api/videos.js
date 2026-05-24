@@ -2,113 +2,78 @@ export default async function handler(req, res) {
 
   try {
 
-    const page =
-      Number(req.query.page || 1);
+    const page = req.query.page || 1;
 
-    let allVideos = [];
-
-    // ======================
-    // VIZEY
-    // ======================
-
-    const vizeyRes = await fetch(
-      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=12`
+    const response = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}`
     );
 
-    const vizeyJson =
-      await vizeyRes.json();
+    const json = await response.json();
 
-    const vizeyVideos =
-      (vizeyJson.data || []).map(v => ({
+    const videos = await Promise.all(
 
-        id: `vz_${v.id}`,
+      (json.data || []).map(async (v) => {
 
-        title: v.title,
+        try {
 
-        thumbnail:
-          v.thumbnail ||
-          "https://via.placeholder.com/300x450?text=Asupanmu",
+          // ambil detail video
+          const detailRes = await fetch(
+            `https://vizey.net/api/v1/videos?apikey=${process.env.VIZEY_API_KEY}&id=${v.id}`
+          );
 
-        watch:
-          `https://vizey.net/view/${v.id}`,
+          const detail = await detailRes.json();
 
-        source: "VIZEY",
+          return {
 
-        createdAt:
-          new Date(v.createdAt || 0).getTime()
+            id: v.id,
 
-      }));
+            title: v.title || "No Title",
 
-    allVideos.push(...vizeyVideos);
+            thumbnail: v.thumbnail,
 
-    // ======================
-    // DOOD
-    // ======================
+            // LINK ASLI DARI API
+            watch:
+              detail?.data?.url ||
 
-    const doodRes = await fetch(
-      `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}`
+              detail?.data?.embed_url ||
+
+              "#",
+
+            createdAt: v.createdAt,
+
+            source: "VIZEY"
+
+          };
+
+        } catch {
+
+          return null;
+
+        }
+
+      })
+
     );
 
-    const doodJson =
-      await doodRes.json();
+    // hapus null
+    const cleanVideos =
+      videos.filter(Boolean);
 
-    const doodVideos =
-      (doodJson.result?.files || []).map(v => ({
-
-        id: `dd_${v.file_code}`,
-
-        title:
-          v.title || "Untitled",
-
-        thumbnail:
-          v.splash_img ||
-          "https://via.placeholder.com/300x450?text=DOOD",
-
-        watch:
-          `https://dood.so/e/${v.file_code}`,
-
-        source: "DOOD",
-
-        createdAt:
-          new Date(v.uploaded || 0).getTime()
-
-      }));
-
-    allVideos.push(...doodVideos);
-
-    // ======================
-    // HAPUS DUPLIKAT
-    // ======================
-
-    const uniqueVideos =
-      Array.from(
-
-        new Map(
-          allVideos.map(v => [v.id, v])
-        ).values()
-
-      );
-
-    // ======================
-    // SORT TERBARU
-    // ======================
-
-    uniqueVideos.sort(
-      (a,b) => b.createdAt - a.createdAt
+    // urut terbaru
+    cleanVideos.sort((a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
     );
 
-    // ======================
-    // CACHE
-    // ======================
-
+    // cache ringan
     res.setHeader(
       "Cache-Control",
       "s-maxage=3600, stale-while-revalidate"
     );
 
-    res.status(200).json(uniqueVideos);
+    res.status(200).json(cleanVideos);
 
-  } catch(err){
+  } catch (err) {
 
     res.status(500).json({
       error: err.message
