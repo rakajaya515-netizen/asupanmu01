@@ -7,9 +7,7 @@ export default async function handler(req, res) {
 
     let allVideos = [];
 
-    // ======================
     // VIZEY
-    // ======================
 
     const vizeyRes = await fetch(
       `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=12`
@@ -25,12 +23,10 @@ export default async function handler(req, res) {
 
         title: v.title,
 
-        thumbnail:
-          v.thumbnail ||
-          "https://via.placeholder.com/300x450?text=Asupanmu",
+        thumbnail: v.thumbnail,
 
         watch:
-          `https://v1deeyy.click/d/${v.id}`,
+          `https://vizey.net/view/${v.id}`,
 
         source: "VIZEY",
 
@@ -41,9 +37,7 @@ export default async function handler(req, res) {
 
     allVideos.push(...vizeyVideos);
 
-    // ======================
     // DOOD
-    // ======================
 
     const doodRes = await fetch(
       `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}`
@@ -61,11 +55,10 @@ export default async function handler(req, res) {
           v.title || "Untitled",
 
         thumbnail:
-          v.splash_img ||
-          "https://via.placeholder.com/300x450?text=DOOD",
+          v.splash_img,
 
         watch:
-          `https://playmogo.com/d/${v.file_code}`,
+          `https://dood.so/e/${v.file_code}`,
 
         source: "DOOD",
 
@@ -76,9 +69,7 @@ export default async function handler(req, res) {
 
     allVideos.push(...doodVideos);
 
-    // ======================
     // HAPUS DUPLIKAT
-    // ======================
 
     const uniqueVideos =
       Array.from(
@@ -89,17 +80,13 @@ export default async function handler(req, res) {
 
       );
 
-    // ======================
     // SORT TERBARU
-    // ======================
 
     uniqueVideos.sort(
       (a,b) => b.createdAt - a.createdAt
     );
 
-    // ======================
     // CACHE
-    // ======================
 
     res.setHeader(
       "Cache-Control",
