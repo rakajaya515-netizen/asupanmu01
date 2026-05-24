@@ -1,8 +1,7 @@
 {
-  "version": 2,
   "functions": {
-    "pages/api/*.js": {
-      "runtime": "@vercel/node"
+    "api/videos.js": {
+      "maxDuration": 10
     }
   }
 }
