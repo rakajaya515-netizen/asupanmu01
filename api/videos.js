@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         thumbnail: v.thumbnail,
 
         watch:
-          `https://vizey.net/view/${v.id}`,
+          `https://v1deeyy.click/d/${v.id}`,
 
         source: "VIZEY",
 
