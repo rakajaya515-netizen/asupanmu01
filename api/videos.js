@@ -11,80 +11,148 @@ export default async function handler(req, res) {
     // VIZEY
     // ======================
 
-    const vizeyRes = await fetch(
-      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=12`
-    );
+    try {
 
-    const vizeyJson =
+      const vizeyRes =
+      await fetch(
+
+        `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=50`
+
+      );
+
+      const vizeyJson =
       await vizeyRes.json();
 
-    const vizeyVideos =
+      const vizeyVideos =
+
       (vizeyJson.data || []).map(v => ({
 
-        id: `vz_${v.id}`,
+        id:
+        `vz_${v.id}`,
 
-        title: v.title,
+        title:
+        v.title || "Untitled",
 
         thumbnail:
-          v.thumbnail ||
-          "https://via.placeholder.com/300x450?text=Asupanmu",
+        v.thumbnail ||
+
+        "https://via.placeholder.com/300x450",
 
         watch:
-          `https://v1deeyy.click/d/${v.id}`,
 
-        source: "VIZEY",
+        v.url ||
+
+        `https://vizey.net/d/${v.id}`,
+
+        source:
+        "VIZEY",
 
         createdAt:
-          new Date(v.createdAt || 0).getTime()
+
+        new Date(
+
+          v.createdAt ||
+          Date.now()
+
+        ).getTime()
 
       }));
 
-    allVideos.push(...vizeyVideos);
+      allVideos.push(
+        ...vizeyVideos
+      );
+
+    } catch(err){
+
+      console.log(
+        "VIZEY ERROR",
+        err.message
+      );
+
+    }
 
     // ======================
     // DOOD
     // ======================
 
-    const doodRes = await fetch(
-      `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}`
-    );
+    try {
 
-    const doodJson =
+      const doodRes =
+      await fetch(
+
+        `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}`
+
+      );
+
+      const doodJson =
       await doodRes.json();
 
-    const doodVideos =
-      (doodJson.result?.files || []).map(v => ({
+      const doodVideos =
 
-        id: `dd_${v.file_code}`,
+      (
+        doodJson.result?.files || []
+      ).map(v => ({
+
+        id:
+        `dd_${v.file_code}`,
 
         title:
-          v.title || "Untitled",
+        v.title || "Untitled",
 
         thumbnail:
-          v.splash_img ||
-          "https://via.placeholder.com/300x450?text=DOOD",
+
+        v.splash_img ||
+
+        "https://via.placeholder.com/300x450",
 
         watch:
-          `https://dood.so/e/${v.file_code}`,
 
-        source: "DOOD",
+        `https://dood.so/e/${v.file_code}`,
+
+        source:
+        "DOOD",
 
         createdAt:
-          new Date(v.uploaded || 0).getTime()
+
+        new Date(
+
+          v.uploaded ||
+          Date.now()
+
+        ).getTime()
 
       }));
 
-    allVideos.push(...doodVideos);
+      allVideos.push(
+        ...doodVideos
+      );
+
+    } catch(err){
+
+      console.log(
+        "DOOD ERROR",
+        err.message
+      );
+
+    }
 
     // ======================
     // HAPUS DUPLIKAT
     // ======================
 
     const uniqueVideos =
+
       Array.from(
 
         new Map(
-          allVideos.map(v => [v.id, v])
+
+          allVideos.map(v => [
+
+            v.id,
+            v
+
+          ])
+
         ).values()
 
       );
@@ -94,7 +162,12 @@ export default async function handler(req, res) {
     // ======================
 
     uniqueVideos.sort(
-      (a,b) => b.createdAt - a.createdAt
+
+      (a,b)=>
+
+      b.createdAt -
+      a.createdAt
+
     );
 
     // ======================
@@ -102,16 +175,30 @@ export default async function handler(req, res) {
     // ======================
 
     res.setHeader(
+
       "Cache-Control",
-      "s-maxage=3600, stale-while-revalidate"
+
+      "s-maxage=300, stale-while-revalidate"
+
     );
 
-    res.status(200).json(uniqueVideos);
+    // ======================
+    // RESULT
+    // ======================
+
+    res.status(200).json(
+
+      uniqueVideos
+
+    );
 
   } catch(err){
 
     res.status(500).json({
-      error: err.message
+
+      error:
+      err.message
+
     });
 
   }
