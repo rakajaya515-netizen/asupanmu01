@@ -1,206 +1,95 @@
 export default async function handler(req, res) {
-
   try {
-
-    const page =
-      Number(req.query.page || 1);
+    const page = Number(req.query.page || 1);
 
     let allVideos = [];
 
-    // ======================
+    // =========================
     // VIZEY
-    // ======================
+    // =========================
 
-    try {
+    const vizeyRes = await fetch(
+      `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=50`
+    );
 
-      const vizeyRes =
-      await fetch(
+    const vizeyJson = await vizeyRes.json();
 
-        `https://vizey.net/api/v1/list?apikey=${process.env.VIZEY_API_KEY}&page=${page}&limit=50`
-
-      );
-
-      const vizeyJson =
-      await vizeyRes.json();
-
-      const vizeyVideos =
-
-      (vizeyJson.data || []).map(v => ({
-
-        id:
-        `vz_${v.id}`,
-
-        title:
-        v.title || "Untitled",
-
-        thumbnail:
+    const vizeyVideos = (vizeyJson.data || []).map(v => ({
+      id: `vz_${v.id}`,
+      title: v.title || "Untitled",
+      thumbnail:
         v.thumbnail ||
+        "https://via.placeholder.com/300x450?text=VIZEY",
+      watch: `https://vidiy.click/d/${v.id}`,
+      source: "VIZEY",
+      createdAt: new Date(v.createdAt || Date.now()).getTime()
+    }));
 
-        "https://via.placeholder.com/300x450",
+    allVideos.push(...vizeyVideos);
 
-        watch:
-
-        v.url ||
-
-        `https://vizey.net/d/${v.id}`,
-
-        source:
-        "VIZEY",
-
-        createdAt:
-
-        new Date(
-
-          v.createdAt ||
-          Date.now()
-
-        ).getTime()
-
-      }));
-
-      allVideos.push(
-        ...vizeyVideos
-      );
-
-    } catch(err){
-
-      console.log(
-        "VIZEY ERROR",
-        err.message
-      );
-
-    }
-
-    // ======================
+    // =========================
     // DOOD
-    // ======================
+    // =========================
 
-    try {
+    const doodRes = await fetch(
+      `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}&per_page=50`
+    );
 
-      const doodRes =
-      await fetch(
+    const doodJson = await doodRes.json();
 
-        `https://doodapi.co/api/file/list?key=${process.env.DOOD_API_KEY}&page=${page}`
-
-      );
-
-      const doodJson =
-      await doodRes.json();
-
-      const doodVideos =
-
-      (
-        doodJson.result?.files || []
-      ).map(v => ({
-
-        id:
-        `dd_${v.file_code}`,
-
-        title:
-        v.title || "Untitled",
-
-        thumbnail:
-
+    const doodVideos = (doodJson.result?.files || []).map(v => ({
+      id: `dd_${v.file_code}`,
+      title: v.title || "Untitled",
+      thumbnail:
         v.splash_img ||
+        "https://via.placeholder.com/300x450?text=DOOD",
+      watch: `https://dood.so/e/${v.file_code}`,
+      source: "DOOD",
+      createdAt: new Date(v.uploaded || Date.now()).getTime()
+    }));
 
-        "https://via.placeholder.com/300x450",
+    allVideos.push(...doodVideos);
 
-        watch:
-
-        `https://dood.so/e/${v.file_code}`,
-
-        source:
-        "DOOD",
-
-        createdAt:
-
-        new Date(
-
-          v.uploaded ||
-          Date.now()
-
-        ).getTime()
-
-      }));
-
-      allVideos.push(
-        ...doodVideos
-      );
-
-    } catch(err){
-
-      console.log(
-        "DOOD ERROR",
-        err.message
-      );
-
-    }
-
-    // ======================
+    // =========================
     // HAPUS DUPLIKAT
-    // ======================
+    // =========================
 
-    const uniqueVideos =
+    const uniqueVideos = Array.from(
+      new Map(
+        allVideos.map(v => [v.id, v])
+      ).values()
+    );
 
-      Array.from(
-
-        new Map(
-
-          allVideos.map(v => [
-
-            v.id,
-            v
-
-          ])
-
-        ).values()
-
-      );
-
-    // ======================
+    // =========================
     // SORT TERBARU
-    // ======================
+    // =========================
 
     uniqueVideos.sort(
-
-      (a,b)=>
-
-      b.createdAt -
-      a.createdAt
-
+      (a, b) => b.createdAt - a.createdAt
     );
 
-    // ======================
+    // =========================
     // CACHE
-    // ======================
+    // =========================
 
     res.setHeader(
-
       "Cache-Control",
-
-      "s-maxage=300, stale-while-revalidate"
-
+      "s-maxage=300, stale-while-revalidate=600"
     );
 
-    // ======================
-    // RESULT
-    // ======================
-
-    res.status(200).json(
-
-      uniqueVideos
-
-    );
-
-  } catch(err){
-
-    res.status(500).json({
-
-      error:
-      err.message
-
+    res.status(200).json({
+      success: true,
+      total: uniqueVideos.length,
+      page,
+      data: uniqueVideos
     });
 
-  }
+  } catch (err) {
+    console.log(err);
 
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
 }
